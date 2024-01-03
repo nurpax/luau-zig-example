@@ -1,24 +1,47 @@
 const std = @import("std");
+const ziglua = @import("ziglua");
+
+const player = @import("./player.zig");
+
+// It can be convenient to store a short reference to the Lua struct when
+// it is used multiple times throughout a file.
+const Lua = ziglua.Lua;
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = gpa.allocator();
+    defer _ = gpa.deinit();
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+    // Initialize The Lua vm and get a reference to the main thread
+    var lua = try Lua.init(allocator);
+    defer lua.deinit();
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
+    // We need to open the base library so the global print() is available
+    lua.open(.{ .base = true });
+    player.register(&lua);
 
-    try bw.flush(); // don't forget to flush!
-}
+    const args = try std.process.argsAlloc(allocator);
+    defer std.process.argsFree(allocator, args);
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+    if (args.len < 1) {
+        std.log.err("usage: luau-example <source.luau[.bin]>", .{});
+        return;
+    }
+
+    const filename = args[1];
+    const src = std.fs.cwd().readFileAlloc(allocator, args[1], std.math.maxInt(u32)) catch {
+        std.log.err("failed to open input .luau/.luau.bin file {s}", .{filename});
+        return;
+    };
+    defer allocator.free(src);
+
+    // Load bytecode compiled with f.ex. luau-compile?
+    if (std.mem.endsWith(u8, filename, ".bin")) {
+        try lua.loadBytecode("...", src);
+        try lua.protectedCall(0, 0, 0);
+    } else {
+        const srcZ = try allocator.dupeZ(u8, src);
+        defer allocator.free(srcZ);
+        try lua.doString(srcZ);
+    }
 }
