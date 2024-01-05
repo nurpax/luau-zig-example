@@ -23,7 +23,7 @@ Compile the luau script into bytecode, execute bytecode:
 
 ```
 luau-compile --binary script/main.luau > script/main.luau.bin
-zig build run -- script\main.luau.bin
+zig build run -- script/main.luau.bin
 ```
 
 ## VSCode
