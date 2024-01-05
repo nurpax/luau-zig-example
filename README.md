@@ -33,4 +33,4 @@ zig build run -- script/main.luau.bin
 
 ## TODO
 
-- [ ] luau-analyze with type types.d.luau (seems like luau-analyze cannot load type decls?)
+- [ ] luau-analyze with type types.d.luau (seems like luau-analyze cannot load type decls? see https://github.com/luau-lang/luau/pull/1139)
