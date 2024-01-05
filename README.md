@@ -1,4 +1,4 @@
-# Luau/Zig/VSCode example
+# Luau/Zig/VSCode example (WIP!)
 
 Example project that:
 
@@ -7,16 +7,16 @@ Example project that:
 - Shows how to declare types for a Luau/Zig API
 - Use [luau-lsp](https://github.com/JohnnyMorganz/luau-lsp) in VSCode for type-checking Luau code
 
-## What's noteworthy about this?
+## Demo
 
-- TODO screenshot
+![VSCode screencap](./img/luau-vscode.gif)
 
 ## Running the project
 
 Running the luau script directly from source:
 
 ```
-zig build run -- script\main.luau
+zig build run -- script/main.luau
 ```
 
 Compile the luau script into bytecode, execute bytecode:
